@@ -51,10 +51,10 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
     >
       {/* Image Section */}
       <div className="relative h-56 bg-gradient-to-br from-orange-100 via-red-100 to-pink-100 overflow-hidden">
-        {recipe.image_url ? (
+        {recipe.image ? (
           <Image
-            src={recipe.image_url}
-            alt={recipe.name}
+            src={recipe.image}
+            alt={recipe.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -105,7 +105,7 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
         <div className="absolute bottom-4 left-4">
           <div className="flex items-center space-x-1 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
-            <span className="text-white text-sm font-medium">4.8</span>
+            <span className="text-white text-sm font-medium">{recipe.average_rating?.toFixed(1) || '4.5'}</span>
           </div>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
       <div className="p-6">
         {/* Recipe Title */}
         <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors duration-300">
-          {recipe.name}
+          {recipe.title}
         </h3>
 
         {/* Recipe Description */}
@@ -164,7 +164,7 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
                 className="inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 text-xs font-medium rounded-full border border-orange-200"
               >
                 <Tag className="w-3 h-3" />
-                <span>{tag}</span>
+                <span>{typeof tag === 'string' ? tag : tag.name}</span>
               </span>
             ))}
             {recipe.tags.length > 3 && (
