@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Root-level build script for Render
 
 set -o errexit  # exit on error
