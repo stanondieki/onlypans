@@ -13,7 +13,7 @@ urlpatterns = [
     path('meals/<int:meal_id>/complete/', views.mark_meal_completed, name='mark-meal-completed'),
     
     # Meals by date range (for calendar/schedule views)
-    path('meals/by-date/', views.get_meals_by_date_range, name='meals-by-date'),
+    path('by-date/', views.get_meals_by_date_range, name='meals-by-date'),
     
     # Shopping Lists
     path('plans/<int:meal_plan_id>/shopping-list/', views.ShoppingListView.as_view(), name='shopping-list'),

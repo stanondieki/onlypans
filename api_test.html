@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OnlyPans API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>OnlyPans API Test</h1>
+    
+    <div class="test-section">
+        <h3>Step 1: Test Health Endpoint</h3>
+        <button onclick="testHealth()">Test Health</button>
+        <div id="healthResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 2: Login</h3>
+        <input type="text" id="username" placeholder="Username" value="admin">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        <button onclick="login()">Login</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 3: Test Meals by Date Endpoint</h3>
+        <input type="date" id="startDate" value="2025-08-04">
+        <button onclick="testMealsByDate()">Test Meals by Date</button>
+        <div id="mealsResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://onlypans.onrender.com/api';
+        let authToken = null;
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            try {
+                const response = await fetch(`${API_BASE}/health/`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<span class="success">✅ Health OK: ${JSON.stringify(data)}</span>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Health Error: ${error.message}</span>`;
+            }
+        }
+
+        async function login() {
+            const resultDiv = document.getElementById('loginResult');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access;
+                    resultDiv.innerHTML = `<span class="success">✅ Login successful! Token: ${authToken.substring(0, 20)}...</span>`;
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `<span class="error">❌ Login failed: ${JSON.stringify(errorData)}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Login error: ${error.message}</span>`;
+            }
+        }
+
+        async function testMealsByDate() {
+            const resultDiv = document.getElementById('mealsResult');
+            const startDate = document.getElementById('startDate').value;
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<span class="error">❌ Please login first</span>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/meals/by-date/?start_date=${startDate}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<span class="success">✅ Meals API works! Found ${data.meals.length} meals</span><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    const errorData = await response.text();
+                    resultDiv.innerHTML = `<span class="error">❌ Meals API failed (${response.status}): ${errorData}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Meals API error: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
