@@ -37,10 +37,15 @@ export default function MealSchedule({ onAddMeal, onEditMeal }: MealScheduleProp
     const loadMealsData = async () => {
       setLoading(true);
       try {
-        const response = await mealAPI.getMealPlan(format(weekStart, 'yyyy-MM-dd'));
+        const endDate = format(addDays(weekStart, 6), 'yyyy-MM-dd');
+        const response = await mealAPI.getMealsByDateRange(
+          format(weekStart, 'yyyy-MM-dd'),
+          endDate
+        );
         setMeals(response.data.meals || []);
       } catch (error) {
         console.error('Error loading meals:', error);
+        setMeals([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
@@ -51,7 +56,7 @@ export default function MealSchedule({ onAddMeal, onEditMeal }: MealScheduleProp
 
   const getMealsForSlot = (date: Date, time: MealTime) => {
     return meals.filter(meal => 
-      isSameDay(new Date(meal.date), date) && meal.time === time
+      isSameDay(new Date(meal.date), date) && meal.meal_type === time
     );
   };
 
@@ -153,9 +158,14 @@ export default function MealSchedule({ onAddMeal, onEditMeal }: MealScheduleProp
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-sm text-gray-900 mb-1">{meal.name}</h4>
+                            <h4 className="font-semibold text-sm text-gray-900 mb-1">
+                              {meal.recipe_details?.title || `Recipe ${meal.recipe}`}
+                            </h4>
                             {meal.notes && (
                               <p className="text-xs text-gray-500 leading-relaxed">{meal.notes}</p>
+                            )}
+                            {meal.servings > 1 && (
+                              <p className="text-xs text-gray-400 mt-1">{meal.servings} servings</p>
                             )}
                           </div>
                           <div className="flex space-x-1 opacity-0 group-hover/meal:opacity-100 transition-opacity duration-200">
