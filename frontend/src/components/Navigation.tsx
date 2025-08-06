@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar, Book, Upload, Home } from 'lucide-react';
+import { Calendar, Book, Bot, Home } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -11,7 +11,7 @@ export default function Navigation() {
     { href: '/', label: 'Home', icon: Home },
     { href: '/meals', label: 'Meal Plan', icon: Calendar },
     { href: '/recipes', label: 'Recipes', icon: Book },
-    { href: '/upload', label: 'AI Assistant', icon: Upload },
+    { href: '/ai', label: 'AI Assistant', icon: Bot },
   ];
 
   return (

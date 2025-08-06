@@ -7,6 +7,7 @@ urlpatterns = [
     path('requests/<int:pk>/', views.AIRequestDetailView.as_view(), name='ai-request-detail'),
     
     # AI Services
+    path('chat/', views.ai_chat, name='ai-chat'),
     path('recognize-food/', views.recognize_food_image, name='recognize-food'),
     path('generate-recipe/', views.generate_recipe, name='generate-recipe'),
     path('suggest-ingredients/', views.suggest_ingredients, name='suggest-ingredients'),

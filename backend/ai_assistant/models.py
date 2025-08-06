@@ -9,6 +9,7 @@ class AIRequest(models.Model):
         ('recipe_generation', 'Recipe Generation'),
         ('ingredient_suggestion', 'Ingredient Suggestion'),
         ('meal_planning', 'Meal Planning'),
+        ('general_chat', 'General Chat'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ai_requests')
