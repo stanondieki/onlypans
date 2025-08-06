@@ -296,6 +296,7 @@ def submit_feedback(request, request_id):
 
 
 @api_view(['GET'])
+@permission_classes([])  # Allow anonymous access
 def ai_service_status(request):
     """Check AI service availability"""
     ai_service = GeminiAIService()
