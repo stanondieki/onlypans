@@ -204,8 +204,12 @@ CACHES = {
 #     }
 # }
 
-# Gemini AI Configuration
-GOOGLE_API_KEY = config('GOOGLE_API_KEY', default='')
+# Google AI API Key
+GOOGLE_AI_API_KEY = config('GOOGLE_AI_API_KEY', default='')
+
+# Legacy support for GOOGLE_API_KEY
+if not GOOGLE_AI_API_KEY:
+    GOOGLE_AI_API_KEY = config('GOOGLE_API_KEY', default='')
 
 # File Upload Configuration
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB

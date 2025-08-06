@@ -166,6 +166,10 @@ CORS_ALLOW_CREDENTIALS = True
 # Google AI API Key
 GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY', '')
 
+# Legacy support for GOOGLE_API_KEY
+if not GOOGLE_AI_API_KEY:
+    GOOGLE_AI_API_KEY = os.getenv('GOOGLE_API_KEY', '')
+
 # Logging configuration
 LOGGING = {
     'version': 1,
