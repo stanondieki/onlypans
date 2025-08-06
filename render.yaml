@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: onlypans-backend
+    env: python
+    region: ohio
+    buildCommand: |
+      pip install -r backend/requirements.txt
+      cd backend && python manage.py collectstatic --no-input
+      cd backend && python manage.py migrate
+      cd backend && python manage.py create_default_superuser
+    startCommand: cd backend && gunicorn onlypans_backend.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: onlypans_backend.production_settings
+      - key: PYTHON_VERSION
+        value: 3.12.0
