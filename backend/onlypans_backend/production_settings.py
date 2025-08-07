@@ -160,9 +160,31 @@ if os.getenv('CORS_ALLOWED_ORIGINS'):
     CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS').split(','))
 
 # Allow all Vercel preview URLs in production (since they have random IDs)
-CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
+CORS_ALLOW_ALL_ORIGINS = True  # Temporary fix for Vercel preview URLs
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Add additional CORS headers for complex requests
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Google AI API Key
 GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY', '')

@@ -186,9 +186,31 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Allow all Vercel preview URLs (they have random subdomains)
-CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)  # Enable by default
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Add additional CORS headers for complex requests
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Redis Configuration for Caching (disabled for development)
 CACHES = {

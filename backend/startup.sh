@@ -3,6 +3,9 @@
 
 echo "Starting OnlyPans Backend Deployment..."
 
+# Set Django settings module for production
+export DJANGO_SETTINGS_MODULE=onlypans_backend.production_settings
+
 # Install dependencies
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
