@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔍 CORS Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; max-height: 300px; overflow-y: auto; }
+        .countdown { font-size: 16px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔍 CORS Debug Test - With Environment Variables</h1>
+    
+    <div class="status warning">
+        <strong>⏱️ Deployment Status:</strong>
+        <div class="countdown" id="countdown">Waiting for Render deployment with explicit CORS env vars... (4 minutes remaining)</div>
+    </div>
+    
+    <div class="status info">
+        <strong>Latest Changes:</strong>
+        <ul>
+            <li>✅ Added <code>CORS_ALLOW_ALL_ORIGINS=True</code> to render.yaml</li>
+            <li>✅ Added <code>CORS_ALLOW_CREDENTIALS=True</code> to render.yaml</li>
+            <li>✅ Created dedicated CORS test endpoint: <code>/api/cors-test/</code></li>
+            <li>✅ This should definitely fix the CORS issue</li>
+        </ul>
+    </div>
+    
+    <button onclick="testCORSEndpoint()">🧪 Test CORS Debug Endpoint</button>
+    <button onclick="testOriginalEndpoint()">🍳 Test Original Recipe Endpoint</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        const backendURL = 'https://onlypans.onrender.com/api';
+        let countdownSeconds = 240; // 4 minutes
+        
+        // Countdown timer
+        const countdownInterval = setInterval(() => {
+            countdownSeconds--;
+            const minutes = Math.floor(countdownSeconds / 60);
+            const seconds = countdownSeconds % 60;
+            document.getElementById('countdown').innerHTML = 
+                `Waiting for Render deployment with explicit CORS env vars... (${minutes}:${seconds.toString().padStart(2, '0')} remaining)`;
+            
+            if (countdownSeconds <= 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').innerHTML = '✅ Deployment should be complete! Test now.';
+                testCORSEndpoint(); // Auto-test
+            }
+        }, 1000);
+        
+        async function testCORSEndpoint() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="status info">Testing CORS debug endpoint...</div>';
+            
+            try {
+                const response = await fetch(backendURL + '/cors-test/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ CORS DEBUG ENDPOINT WORKING!
+                            <br><strong>Status:</strong> ${response.status}
+                            <br><strong>Response:</strong>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            <br><strong>✨ CORS is now working! Try your Vercel app!</strong>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ CORS endpoint error: ${response.status}
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    resultsDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ CORS still blocked: ${error.message}
+                            <br>The deployment may not be complete yet, or there's a configuration issue.
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Network error: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        async function testOriginalEndpoint() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="status info">Testing the original failing recipe endpoint...</div>';
+            
+            try {
+                const response = await fetch(backendURL + '/recipes/generate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ingredients: 'eggs, cheese, butter',
+                        dietary_restrictions: '',
+                        cuisine_preference: 'American',
+                        difficulty_preference: 'Easy',
+                        servings: 2,
+                        time_constraint: 30
+                    })
+                });
+                
+                if (response.status === 401) {
+                    resultsDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ CORS FIXED! Recipe endpoint accessible
+                            <br><strong>Status:</strong> 401 Unauthorized (requires login - this is expected)
+                            <br><strong>✨ The original CORS error is gone!</strong>
+                            <br><br><strong>Your Vercel app should now work with logged-in users!</strong>
+                        </div>
+                    `;
+                } else {
+                    const data = await response.json();
+                    resultsDiv.innerHTML = `
+                        <div class="status warning">
+                            ⚠️ Unexpected response: ${response.status}
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    resultsDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Original endpoint still blocked by CORS: ${error.message}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Original endpoint error: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

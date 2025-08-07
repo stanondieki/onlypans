@@ -147,7 +147,11 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': False,
 }
 
-# CORS settings
+# CORS settings - FORCE ALLOW ALL (for debugging)
+CORS_ALLOW_ALL_ORIGINS = True  # This overrides everything
+CORS_ALLOW_CREDENTIALS = True
+
+# Backup specific origins (if CORS_ALLOW_ALL_ORIGINS doesn't work)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -158,11 +162,6 @@ CORS_ALLOWED_ORIGINS = [
 # Add custom origins from environment variable
 if os.getenv('CORS_ALLOWED_ORIGINS'):
     CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS').split(','))
-
-# Allow all Vercel preview URLs in production (since they have random IDs)
-CORS_ALLOW_ALL_ORIGINS = True  # Temporary fix for Vercel preview URLs
-
-CORS_ALLOW_CREDENTIALS = True
 
 # Add additional CORS headers for complex requests
 CORS_ALLOW_HEADERS = [
@@ -185,6 +184,9 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+# Additional CORS settings for maximum compatibility
+CORS_PREFLIGHT_MAX_AGE = 86400
 
 # Google AI API Key
 GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY', '')
