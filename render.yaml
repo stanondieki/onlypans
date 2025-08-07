@@ -4,17 +4,18 @@ services:
     env: python
     region: ohio
     buildCommand: |
-      pip install -r backend/requirements.txt
-      cd backend && python manage.py collectstatic --no-input
-      cd backend && python manage.py migrate
-      cd backend && python manage.py create_default_superuser
-    startCommand: cd backend && gunicorn onlypans_backend.wsgi:application
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+    startCommand: gunicorn onlypans_backend.wsgi:application
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: onlypans_backend.production_settings
       - key: PYTHON_VERSION
         value: 3.12.0
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "onlypans-backend.onrender.com"
       - key: CORS_ALLOW_ALL_ORIGINS
-        value: "True"
-      - key: CORS_ALLOW_CREDENTIALS
         value: "True"

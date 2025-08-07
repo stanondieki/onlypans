@@ -10,10 +10,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']  # For production, specify exact domains
-# Example: ALLOWED_HOSTS = ['your-app.railway.app', 'your-app.onrender.com']
+ALLOWED_HOSTS = ['onlypans-backend.onrender.com', '127.0.0.1', 'localhost']
 if os.getenv('ALLOWED_HOSTS'):
-    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+    ALLOWED_HOSTS.extend(os.getenv('ALLOWED_HOSTS').split(','))
 
 # Application definition
 INSTALLED_APPS = [
