@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Bot, Camera, ChefHat, MessageCircle, Send, Sparkles, Upload, X, AlertCircle } from 'lucide-react';
+import { Bot, Camera, ChefHat, MessageCircle, Send, Sparkles, Upload, X, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import { aiAPI } from '@/lib/api';
 import { enhancedAIAPI } from '@/lib/enhancedAIAPI';
+import { mockAIAPI } from '@/lib/mockAPI';
 import ConnectionDiagnostic from '@/components/ConnectionDiagnostic';
 
 interface ChatMessage {
@@ -23,6 +24,8 @@ interface AIResponse {
 
 export default function AIAssistant() {
   const [activeTab, setActiveTab] = useState<'chat' | 'image' | 'recipe'>('chat');
+  const [useMockAPI, setUseMockAPI] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -71,20 +74,41 @@ export default function AIAssistant() {
     setLoading(true);
 
     try {
-      console.log('🚀 Sending chat message:', userMessage);
-      const response = await enhancedAIAPI.chat(userMessage);
+      let response;
       
-      if (response?.data?.success) {
-        addMessage('ai', response.data.data.response);
-        console.log('✅ Chat response received:', response.data.data.response.substring(0, 100) + '...');
+      if (useMockAPI) {
+        // Use mock API for immediate testing
+        console.log('� Using mock API for message:', userMessage);
+        const mockResponse = await mockAIAPI.chat(userMessage);
+        addMessage('ai', mockResponse.response);
+        console.log('✅ Mock response received');
       } else {
-        addMessage('error', `Sorry, I encountered an error: ${response?.data?.message || 'Unknown error'}`);
-        console.error('❌ Chat API error:', response?.data?.message);
+        // Try real API first
+        console.log('�🚀 Sending chat message to real API:', userMessage);
+        try {
+          response = await enhancedAIAPI.chat(userMessage);
+          
+          if (response?.data?.success) {
+            addMessage('ai', response.data.data.response);
+            console.log('✅ Real API response received');
+            setConnectionStatus('connected');
+          } else {
+            throw new Error(`API Error: ${response?.data?.message || 'Unknown error'}`);
+          }
+        } catch (realAPIError) {
+          console.warn('⚠️ Real API failed, switching to mock mode:', realAPIError);
+          setConnectionStatus('disconnected');
+          setUseMockAPI(true);
+          
+          // Fall back to mock API
+          const mockResponse = await mockAIAPI.chat(userMessage);
+          addMessage('ai', `[Mock Mode] ${mockResponse.response}`);
+        }
       }
     } catch (error: any) {
       console.error('❌ Chat error:', error);
-      const errorMessage = error.message || 'Sorry, I\'m having trouble connecting right now. Please check the connection diagnostic and try again.';
-      addMessage('error', errorMessage);
+      addMessage('error', 'Sorry, I\'m having trouble right now. Please check the connection diagnostic below.');
+      setConnectionStatus('disconnected');
     } finally {
       setLoading(false);
     }
@@ -247,13 +271,52 @@ export default function AIAssistant() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-              <Bot className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">OnlyPans AI Assistant</h1>
+                <p className="text-gray-600">Your intelligent cooking companion powered by Gemini AI</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">OnlyPans AI Assistant</h1>
-              <p className="text-gray-600">Your intelligent cooking companion powered by Gemini AI</p>
+            
+            {/* Connection Status */}
+            <div className="flex items-center space-x-2">
+              {useMockAPI ? (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                  <WifiOff className="w-4 h-4" />
+                  <span>Demo Mode</span>
+                  <button 
+                    onClick={() => {setUseMockAPI(false); setConnectionStatus('checking');}}
+                    className="ml-2 text-xs underline hover:no-underline"
+                  >
+                    Try Real API
+                  </button>
+                </div>
+              ) : connectionStatus === 'connected' ? (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  <Wifi className="w-4 h-4" />
+                  <span>Connected</span>
+                </div>
+              ) : connectionStatus === 'disconnected' ? (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
+                  <WifiOff className="w-4 h-4" />
+                  <span>Disconnected</span>
+                  <button 
+                    onClick={() => setUseMockAPI(true)}
+                    className="ml-2 text-xs underline hover:no-underline"
+                  >
+                    Use Demo
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                  <span>Checking...</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
