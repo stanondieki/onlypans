@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔍 Find Your Vercel URL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .url-test { padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        .working { background: #d4edda; border-color: #c3e6cb; }
+        .broken { background: #f8d7da; border-color: #f5c6cb; }
+        .testing { background: #fff3cd; border-color: #ffeaa7; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Find Your Vercel Frontend URL</h1>
+    
+    <button onclick="testURLs()">🧪 Test All Possible URLs</button>
+    
+    <div id="results">
+        <p>Click the button above to test common Vercel URL patterns for your project...</p>
+    </div>
+    
+    <script>
+        const possibleURLs = [
+            'https://onlypans.vercel.app',
+            'https://onlypans-stanondieki.vercel.app',
+            'https://onlypans-git-main-stanondieki.vercel.app',
+            'https://onlypans-frontend.vercel.app',
+            'https://onlypans-frontend-stanondieki.vercel.app'
+        ];
+        
+        async function testURLs() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h3>Testing URLs...</h3>';
+            
+            for (const url of possibleURLs) {
+                const testDiv = document.createElement('div');
+                testDiv.className = 'url-test testing';
+                testDiv.innerHTML = `<strong>${url}</strong> - Testing...`;
+                resultsDiv.appendChild(testDiv);
+                
+                try {
+                    const response = await fetch(url, { mode: 'no-cors' });
+                    // Note: no-cors means we can't read the response, but we can see if it loads
+                    testDiv.className = 'url-test working';
+                    testDiv.innerHTML = `<strong>${url}</strong> - ✅ RESPONDS (likely your site!) <a href="${url}" target="_blank">Open →</a>`;
+                } catch (error) {
+                    testDiv.className = 'url-test broken';
+                    testDiv.innerHTML = `<strong>${url}</strong> - ❌ No response`;
+                }
+                
+                // Add small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            resultsDiv.innerHTML += `
+                <div class="url-test" style="background: #d1ecf1; border-color: #bee5eb; margin-top: 20px;">
+                    <h3>📋 Manual Check</h3>
+                    <p>If none of the automatic tests work:</p>
+                    <ol>
+                        <li>Go to <a href="https://vercel.com/dashboard" target="_blank">Vercel Dashboard</a></li>
+                        <li>Find your "onlypans" project</li>
+                        <li>Copy the actual URL from there</li>
+                        <li>Then replace the URL in our diagnostic tools</li>
+                    </ol>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -152,16 +152,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://onlypans-ctfazewa7-stanondiekis-projects.vercel.app",
+    "https://onlypans-2n0yp79t8-stanondiekis-projects.vercel.app",
 ]
 
 # Add custom origins from environment variable
 if os.getenv('CORS_ALLOWED_ORIGINS'):
     CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS').split(','))
 
-CORS_ALLOW_CREDENTIALS = True
+# Allow all Vercel preview URLs in production (since they have random IDs)
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
 
-# For development/testing only - remove in production
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Google AI API Key
 GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY', '')

@@ -182,7 +182,11 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://onlypans-2n0yp79t8-stanondiekis-projects.vercel.app",
 ]
+
+# Allow all Vercel preview URLs (they have random subdomains)
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 
 CORS_ALLOW_CREDENTIALS = True
 
