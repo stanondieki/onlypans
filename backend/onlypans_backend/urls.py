@@ -11,9 +11,17 @@ def health_check(request):
     """Health check endpoint for deployment platforms"""
     return JsonResponse({'status': 'healthy', 'message': 'OnlyPans backend is running'})
 
+# Import the CORS test view
+import sys
+import os
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from cors_test_view import cors_test
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', health_check, name='health_check'),
+    path('api/cors-test/', cors_test, name='cors_test'),
     path('api/auth/', include('accounts.urls')),
     path('api/recipes/', include('recipes.urls')),
     path('api/meals/', include('meals.urls')),
