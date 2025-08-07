@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Bot, Camera, ChefHat, MessageCircle, Send, Sparkles, Upload, X } from 'lucide-react';
+import { Bot, Camera, ChefHat, MessageCircle, Send, Sparkles, Upload, X, AlertCircle } from 'lucide-react';
 import { aiAPI } from '@/lib/api';
+import { enhancedAIAPI } from '@/lib/enhancedAIAPI';
+import ConnectionDiagnostic from '@/components/ConnectionDiagnostic';
 
 interface ChatMessage {
   id: string;
-  type: 'user' | 'ai';
+  type: 'user' | 'ai' | 'error';
   content: string;
   timestamp: Date;
 }
@@ -25,7 +27,7 @@ export default function AIAssistant() {
     {
       id: '1',
       type: 'ai',
-      content: 'Hello! I\'m your OnlyPans AI assistant. I can help you with cooking questions, analyze food images for recipes, or generate custom recipes from ingredients. What would you like to explore today?',
+      content: 'Hello! I\'m your OnlyPans AI assistant powered by Gemini AI. I can help you with cooking questions, analyze food images for recipes, or generate custom recipes from ingredients. What would you like to explore today?',
       timestamp: new Date()
     }
   ]);
@@ -49,7 +51,7 @@ export default function AIAssistant() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const addMessage = (type: 'user' | 'ai', content: string) => {
+  const addMessage = (type: 'user' | 'ai' | 'error', content: string) => {
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       type,
@@ -69,15 +71,20 @@ export default function AIAssistant() {
     setLoading(true);
 
     try {
-      const response = await aiAPI.chat(userMessage);
-      if (response.data.success) {
+      console.log('🚀 Sending chat message:', userMessage);
+      const response = await enhancedAIAPI.chat(userMessage);
+      
+      if (response?.data?.success) {
         addMessage('ai', response.data.data.response);
+        console.log('✅ Chat response received:', response.data.data.response.substring(0, 100) + '...');
       } else {
-        addMessage('ai', `Sorry, I encountered an error: ${response.data.message}`);
+        addMessage('error', `Sorry, I encountered an error: ${response?.data?.message || 'Unknown error'}`);
+        console.error('❌ Chat API error:', response?.data?.message);
       }
-    } catch (error) {
-      console.error('Chat error:', error);
-      addMessage('ai', 'Sorry, I\'m having trouble connecting right now. Please try again in a moment.');
+    } catch (error: any) {
+      console.error('❌ Chat error:', error);
+      const errorMessage = error.message || 'Sorry, I\'m having trouble connecting right now. Please check the connection diagnostic and try again.';
+      addMessage('error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -99,12 +106,16 @@ export default function AIAssistant() {
     if (!selectedImage || loading) return;
 
     setLoading(true);
+    addMessage('user', '📸 Analyzing uploaded image...');
+    
     try {
       const formData = new FormData();
       formData.append('image', selectedImage);
 
-      const response = await aiAPI.recognizeFood(formData);
-      if (response.data.success) {
+      console.log('🚀 Sending image for analysis:', selectedImage.name);
+      const response = await enhancedAIAPI.recognizeFood(formData);
+      
+      if (response?.data?.success) {
         const data = response.data.data;
         let analysisText = `🔍 **Food Analysis Results:**\n\n`;
         
@@ -145,12 +156,15 @@ export default function AIAssistant() {
         }
 
         addMessage('ai', analysisText);
+        console.log('✅ Image analysis successful');
       } else {
-        addMessage('ai', `Sorry, I couldn't analyze the image: ${response.data.message}`);
+        addMessage('error', `Sorry, I couldn't analyze the image: ${response?.data?.message || 'Unknown error'}`);
+        console.error('❌ Image analysis error:', response?.data?.message);
       }
-    } catch (error) {
-      console.error('Image analysis error:', error);
-      addMessage('ai', 'Sorry, I had trouble analyzing the image. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Image analysis error:', error);
+      const errorMessage = error.message || 'Sorry, I had trouble analyzing the image. Please check the connection and try again.';
+      addMessage('error', errorMessage);
     } finally {
       setLoading(false);
       setSelectedImage(null);
@@ -171,8 +185,10 @@ export default function AIAssistant() {
         time_constraint: preferences.time_constraint ? parseInt(preferences.time_constraint) : undefined
       };
 
-      const response = await aiAPI.generateRecipe(requestData);
-      if (response.data.success && response.data.data.recipe) {
+      console.log('🚀 Generating recipe with data:', requestData);
+      const response = await enhancedAIAPI.generateRecipe(requestData);
+      
+      if (response?.data?.success && response?.data?.data?.recipe) {
         const recipe = response.data.data.recipe;
         let recipeText = `🍳 **${recipe.title}**\n\n`;
         recipeText += `${recipe.description}\n\n`;
@@ -203,17 +219,20 @@ export default function AIAssistant() {
           recipeText += `• Protein: ${nutrition.protein_grams || 'N/A'}g | Carbs: ${nutrition.carbs_grams || 'N/A'}g | Fat: ${nutrition.fat_grams || 'N/A'}g\n`;
         }
 
-        if (response.data.data.notes) {
+        if (response?.data?.data?.notes) {
           recipeText += `\n💡 **Chef's Notes:**\n${response.data.data.notes}`;
         }
 
         addMessage('ai', recipeText);
+        console.log('✅ Recipe generation successful');
       } else {
-        addMessage('ai', `Sorry, I couldn't generate a recipe: ${response.data.message}`);
+        addMessage('error', `Sorry, I couldn't generate a recipe: ${response?.data?.message || 'Unknown error'}`);
+        console.error('❌ Recipe generation error:', response?.data?.message);
       }
-    } catch (error) {
-      console.error('Recipe generation error:', error);
-      addMessage('ai', 'Sorry, I had trouble generating a recipe. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Recipe generation error:', error);
+      const errorMessage = error.message || 'Sorry, I had trouble generating a recipe. Please check the connection and try again.';
+      addMessage('error', errorMessage);
     } finally {
       setLoading(false);
       setIngredients('');
@@ -222,6 +241,9 @@ export default function AIAssistant() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-4">
+      {/* Connection Diagnostic Component */}
+      <ConnectionDiagnostic />
+      
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
@@ -289,9 +311,17 @@ export default function AIAssistant() {
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg whitespace-pre-wrap ${
                           message.type === 'user'
                             ? 'bg-orange-500 text-white'
+                            : message.type === 'error'
+                            ? 'bg-red-50 text-red-800 shadow-sm border border-red-200'
                             : 'bg-white text-gray-800 shadow-sm border'
                         }`}
                       >
+                        {message.type === 'error' && (
+                          <div className="flex items-center space-x-2 mb-2">
+                            <AlertCircle className="w-4 h-4 text-red-500" />
+                            <span className="text-sm font-medium text-red-600">Connection Error</span>
+                          </div>
+                        )}
                         {message.content}
                       </div>
                     </div>
