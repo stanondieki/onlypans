@@ -13,33 +13,33 @@ def health_check(request):
     """Health check endpoint for deployment platforms"""
     return JsonResponse({'status': 'healthy', 'message': 'OnlyPans backend is running'})
 
-@csrf_exempt
-@require_http_methods(["GET", "POST", "OPTIONS"])
-def cors_test(request):
-    """Simple endpoint to test CORS configuration"""
+def cors_debug(request):
+    """Simple CORS debug endpoint"""
+    from django.conf import settings
     
-    if request.method == 'OPTIONS':
-        # Handle preflight request
-        response = JsonResponse({'message': 'CORS preflight successful'})
-    else:
-        # Return CORS configuration info
-        response = JsonResponse({
-            'message': 'CORS test endpoint',
-            'method': request.method,
-            'origin': request.META.get('HTTP_ORIGIN', 'None'),
-            'cors_settings': {
-                'CORS_ALLOW_ALL_ORIGINS': getattr(settings, 'CORS_ALLOW_ALL_ORIGINS', None),
-                'CORS_ALLOWED_ORIGINS': getattr(settings, 'CORS_ALLOWED_ORIGINS', None),
-                'CORS_ALLOW_CREDENTIALS': getattr(settings, 'CORS_ALLOW_CREDENTIALS', None),
-            }
-        })
+    response_data = {
+        'cors_debug': True,
+        'method': request.method,
+        'origin': request.META.get('HTTP_ORIGIN', 'No origin header'),
+        'cors_allow_all_origins': getattr(settings, 'CORS_ALLOW_ALL_ORIGINS', 'Not set'),
+        'cors_allowed_origins': getattr(settings, 'CORS_ALLOWED_ORIGINS', 'Not set'),
+        'cors_allow_credentials': getattr(settings, 'CORS_ALLOW_CREDENTIALS', 'Not set'),
+    }
+    
+    response = JsonResponse(response_data)
+    
+    # Manually add CORS headers as a backup
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    response['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization, X-Requested-With'
+    response['Access-Control-Allow-Credentials'] = 'true'
     
     return response
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', health_check, name='health_check'),
-    path('api/cors-test/', cors_test, name='cors_test'),
+    path('api/cors-test/', cors_debug, name='cors_debug'),
     path('api/auth/', include('accounts.urls')),
     path('api/recipes/', include('recipes.urls')),
     path('api/meals/', include('meals.urls')),
