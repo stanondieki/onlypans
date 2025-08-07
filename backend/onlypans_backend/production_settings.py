@@ -147,21 +147,9 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': False,
 }
 
-# CORS settings - FORCE ALLOW ALL (for debugging)
-CORS_ALLOW_ALL_ORIGINS = True  # This overrides everything
+# CORS settings - Simple and guaranteed to work
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
-# Backup specific origins (if CORS_ALLOW_ALL_ORIGINS doesn't work)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://onlypans-ctfazewa7-stanondiekis-projects.vercel.app",
-    "https://onlypans-2n0yp79t8-stanondiekis-projects.vercel.app",
-]
-
-# Add custom origins from environment variable
-if os.getenv('CORS_ALLOWED_ORIGINS'):
-    CORS_ALLOWED_ORIGINS.extend(os.getenv('CORS_ALLOWED_ORIGINS').split(','))
 
 # Add additional CORS headers for complex requests
 CORS_ALLOW_HEADERS = [

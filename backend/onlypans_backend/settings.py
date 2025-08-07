@@ -178,16 +178,9 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': False,
 }
 
-# CORS Configuration - FORCE ALLOW ALL ORIGINS
-CORS_ALLOW_ALL_ORIGINS = True  # Force allow all origins
+# CORS settings - Simple configuration
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
-# Backup specific origins (in case CORS_ALLOW_ALL_ORIGINS doesn't work)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://onlypans-2n0yp79t8-stanondiekis-projects.vercel.app",
-]
 
 # Add additional CORS headers for complex requests
 CORS_ALLOW_HEADERS = [
