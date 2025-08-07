@@ -22,7 +22,4 @@ urlpatterns = [
     # User Statistics and Dashboard
     path('stats/', views.user_statistics, name='user-statistics'),
     path('dashboard/', views.user_dashboard, name='user-dashboard'),
-    
-    # Temporary admin creation (remove after setup)
-    path('create-admin/', views.create_admin_user, name='create-admin'),
 ]
