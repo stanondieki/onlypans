@@ -4,10 +4,11 @@ services:
     env: python
     region: ohio
     buildCommand: |
+      cd backend
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
       python manage.py migrate
-    startCommand: gunicorn onlypans_backend.wsgi:application
+    startCommand: cd backend && gunicorn onlypans_backend.wsgi:application --host 0.0.0.0 --port $PORT
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: onlypans_backend.production_settings
