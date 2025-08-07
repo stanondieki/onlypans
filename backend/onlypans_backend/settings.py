@@ -187,7 +187,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://onlypans-2n0yp79t8-stanondiekis-projects.vercel.app",
-    "*",  # Allow all
 ]
 
 # Add additional CORS headers for complex requests
