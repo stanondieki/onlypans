@@ -20,3 +20,5 @@ services:
         value: "onlypans-backend.onrender.com"
       - key: CORS_ALLOW_ALL_ORIGINS
         value: "True"
+      - key: USE_SQLITE
+        value: "True"
