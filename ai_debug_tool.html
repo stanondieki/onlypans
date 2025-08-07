@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnlyPans AI Debug Tool</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input, textarea { 
+            width: 100%; 
+            padding: 8px; 
+            margin: 5px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+        }
+        #results { 
+            margin-top: 20px; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 OnlyPans AI Debug Tool</h1>
+        <p>This tool will help diagnose why your AI assistant isn't responding to questions.</p>
+        
+        <div class="step">
+            <h3>Step 1: Test Backend Connection</h3>
+            <button onclick="testBackend()">Test Backend</button>
+            <div id="backend-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Login Test</h3>
+            <input type="text" id="username" placeholder="Username (admin)" value="admin">
+            <input type="password" id="password" placeholder="Password (admin123)" value="admin123">
+            <button onclick="testLogin()">Test Login</button>
+            <div id="login-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: AI Chat Test</h3>
+            <textarea id="question" placeholder="Ask a cooking question..." rows="3">Give me a simple recipe for scrambled eggs</textarea>
+            <button onclick="testAIChat()">Test AI Chat</button>
+            <div id="chat-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Full Frontend Simulation</h3>
+            <p>This simulates exactly what your frontend does:</p>
+            <button onclick="simulateFrontend()">Simulate Frontend Request</button>
+            <div id="frontend-result"></div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://onlypans.onrender.com/api';
+        let authToken = null;
+
+        function log(message) {
+            document.getElementById('results').innerHTML += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/status/`);
+                const data = await response.json();
+                
+                if (data.available) {
+                    resultDiv.innerHTML = '<div class="success">✅ Backend working! AI service available.</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ AI service not available: ' + data.message + '</div>';
+                }
+                
+                log('Backend test: ' + JSON.stringify(data));
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Backend connection failed: ' + error.message + '</div>';
+                log('Backend error: ' + error.message);
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            resultDiv.innerHTML = 'Logging in...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.access) {
+                    authToken = data.access;
+                    resultDiv.innerHTML = '<div class="success">✅ Login successful! Token saved.</div>';
+                    log('Login successful, token: ' + authToken.substring(0, 50) + '...');
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Login failed: ' + JSON.stringify(data) + '</div>';
+                    log('Login failed: ' + JSON.stringify(data));
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Login error: ' + error.message + '</div>';
+                log('Login error: ' + error.message);
+            }
+        }
+
+        async function testAIChat() {
+            const resultDiv = document.getElementById('chat-result');
+            const question = document.getElementById('question').value;
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please login first!</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = 'Asking AI...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/chat/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ question })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const aiResponse = data.data.response;
+                    resultDiv.innerHTML = `<div class="success">✅ AI Response received!<br><br><strong>Response:</strong><br>${aiResponse.substring(0, 300)}${aiResponse.length > 300 ? '...' : ''}</div>`;
+                    log('AI response length: ' + aiResponse.length + ' characters');
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ AI chat failed: ' + JSON.stringify(data) + '</div>';
+                    log('AI chat failed: ' + JSON.stringify(data));
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ AI chat error: ' + error.message + '</div>';
+                log('AI chat error: ' + error.message);
+            }
+        }
+
+        async function simulateFrontend() {
+            const resultDiv = document.getElementById('frontend-result');
+            resultDiv.innerHTML = 'Simulating frontend request...';
+            
+            try {
+                // This simulates exactly what your frontend code does
+                const question = document.getElementById('question').value;
+                
+                // Step 1: Check if we have a token in localStorage (simulated)
+                if (!authToken) {
+                    resultDiv.innerHTML = '<div class="error">❌ No auth token available. Please login first.</div>';
+                    return;
+                }
+                
+                // Step 2: Make the same request your frontend makes
+                const response = await fetch(`${API_BASE}/ai/chat/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        question: question,
+                        context: '' 
+                    })
+                });
+                
+                log('Frontend simulation - Response status: ' + response.status);
+                log('Frontend simulation - Response headers: ' + JSON.stringify(Object.fromEntries(response.headers.entries())));
+                
+                const data = await response.json();
+                log('Frontend simulation - Response data: ' + JSON.stringify(data));
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Frontend simulation successful!<br><br>
+                            <strong>This is what your frontend should receive:</strong><br>
+                            ${data.data.response.substring(0, 500)}${data.data.response.length > 500 ? '...' : ''}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Frontend simulation failed: ' + data.message + '</div>';
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Frontend simulation error: ' + error.message + '</div>';
+                log('Frontend simulation error: ' + error.message);
+            }
+        }
+
+        // Auto-test backend on page load
+        window.onload = function() {
+            testBackend();
+        };
+    </script>
+</body>
+</html>

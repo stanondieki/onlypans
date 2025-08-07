@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Environment Variable Test</title>
+</head>
+<body>
+    <h1>OnlyPans Environment Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        // This will show what API URL your frontend is actually using
+        const apiUrl = process?.env?.NEXT_PUBLIC_API_URL || 'https://onlypans.onrender.com/api';
+        
+        document.getElementById('result').innerHTML = `
+            <h3>Current API URL Configuration:</h3>
+            <p><strong>API_BASE_URL:</strong> ${apiUrl}</p>
+            <p><strong>Expected:</strong> https://onlypans.onrender.com/api</p>
+            <p><strong>Status:</strong> ${apiUrl.includes('localhost') ? '❌ WRONG (localhost)' : '✅ CORRECT'}</p>
+        `;
+        
+        console.log('NEXT_PUBLIC_API_URL:', process?.env?.NEXT_PUBLIC_API_URL);
+        console.log('Fallback URL:', 'https://onlypans.onrender.com/api');
+        console.log('Final API URL:', apiUrl);
+    </script>
+</body>
+</html>
