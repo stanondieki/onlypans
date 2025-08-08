@@ -1,202 +1,95 @@
-# OnlyPans - Local Development Setup
+# OnlyPans - Local Development
 
-This guide will help you set up the OnlyPans application for local development.
+A meal planning application built with Django REST API backend and Next.js frontend.
 
 ## Prerequisites
 
-- **Python 3.8+** (for Django backend)
-- **Node.js 18+** (for Next.js frontend)
-- **Git** (for version control)
+- Python 3.12+
+- Node.js 18+
+- npm or yarn
 
-## Quick Setup
+## Quick Start
 
-### Windows Users
-```bash
-setup-dev.bat
-```
+### Backend Setup
 
-### macOS/Linux Users
-```bash
-chmod +x setup-dev.sh
-./setup-dev.sh
-```
-
-## Manual Setup
-
-### Backend Setup (Django)
-
-1. **Navigate to backend directory:**
+1. Navigate to backend directory:
    ```bash
    cd backend
    ```
 
-2. **Create virtual environment:**
+2. Create and activate virtual environment:
    ```bash
    python -m venv venv
-   ```
-
-3. **Activate virtual environment:**
-   ```bash
-   # Windows
+   # On Windows:
    venv\Scripts\activate
-   
-   # macOS/Linux
+   # On macOS/Linux:
    source venv/bin/activate
    ```
 
-4. **Install dependencies:**
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-5. **Set up environment variables:**
-   - Copy `.env.example` to `.env`
-   - Update the values as needed (especially `GOOGLE_API_KEY` if using AI features)
-
-6. **Run migrations:**
+4. Run migrations:
    ```bash
-   python manage.py makemigrations
    python manage.py migrate
    ```
 
-7. **Create a superuser (optional):**
+5. Create superuser (optional):
    ```bash
    python manage.py createsuperuser
    ```
 
-8. **Start the development server:**
+6. Start Django development server:
    ```bash
    python manage.py runserver
    ```
 
-### Frontend Setup (Next.js)
+### Frontend Setup
 
-1. **Navigate to frontend directory:**
+1. Navigate to frontend directory:
    ```bash
    cd frontend
    ```
 
-2. **Install dependencies:**
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-3. **Start the development server:**
+3. Start Next.js development server:
    ```bash
    npm run dev
    ```
 
-## Development URLs
+## Access the Application
 
-- **Frontend Application:** http://localhost:3000
-- **Backend API:** http://localhost:8000
-- **Django Admin Panel:** http://localhost:8000/admin
-- **API Documentation:** http://localhost:8000/api/ (if configured)
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- Django Admin: http://localhost:8000/admin
+
+## Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` and configure:
+- `GOOGLE_API_KEY`: For AI-powered recipe suggestions (optional)
 
 ## Project Structure
 
 ```
 OnlyPans/
-├── backend/                 # Django backend
-│   ├── accounts/           # User authentication app
-│   ├── ai_assistant/       # AI features app
-│   ├── meals/              # Meals management app
-│   ├── recipes/            # Recipes management app
-│   ├── onlypans_backend/   # Main Django project
-│   ├── manage.py           # Django management script
-│   ├── requirements.txt    # Python dependencies
-│   └── .env               # Environment variables
-├── frontend/               # Next.js frontend
-│   ├── src/               # Source code
-│   ├── public/            # Static assets
-│   ├── package.json       # Node.js dependencies
-│   └── .env.local         # Environment variables
-└── README.md              # This file
+├── backend/          # Django REST API
+│   ├── accounts/     # User authentication
+│   ├── meals/        # Meal planning
+│   ├── recipes/      # Recipe management
+│   └── ai_assistant/ # AI features
+├── frontend/         # Next.js application
+└── README.md
 ```
 
-## Environment Variables
+## Development Notes
 
-### Backend (.env)
-- `SECRET_KEY`: Django secret key
-- `DEBUG`: Enable debug mode (True for development)
-- `USE_SQLITE`: Use SQLite database (True for development)
-- `GOOGLE_API_KEY`: Google AI API key (for AI features)
-
-### Frontend (.env.local)
-- `NEXT_PUBLIC_API_URL`: Backend API URL
-- `NEXT_PUBLIC_API_BASE_URL`: Backend base URL
-
-## Database
-
-By default, the project uses SQLite for development (no setup required). 
-
-To use PostgreSQL:
-1. Install PostgreSQL
-2. Create a database named `onlypans_db`
-3. Update `.env` file with database credentials
-4. Set `USE_SQLITE=False` in `.env`
-
-## AI Features
-
-To use AI features:
-1. Get a Google AI API key from Google AI Studio
-2. Add it to `GOOGLE_API_KEY` in the backend `.env` file
-
-## Common Commands
-
-### Backend
-```bash
-# Run development server
-python manage.py runserver
-
-# Create migrations
-python manage.py makemigrations
-
-# Apply migrations
-python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
-
-# Run tests
-python manage.py test
-
-# Collect static files
-python manage.py collectstatic
-```
-
-### Frontend
-```bash
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Run linting
-npm run lint
-```
-
-## Troubleshooting
-
-1. **Port already in use:** Change the port by running `python manage.py runserver 8001` for backend or modify the Next.js config for frontend.
-
-2. **Module not found:** Make sure you've activated the virtual environment and installed all dependencies.
-
-3. **Database errors:** Run `python manage.py migrate` to apply database migrations.
-
-4. **CORS errors:** Make sure the frontend URL is in `CORS_ALLOWED_ORIGINS` in Django settings.
-
-## Contributing
-
-1. Create a new branch for your feature
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
-
-## Support
-
-If you encounter any issues, please check the troubleshooting section or create an issue in the repository.
+- Uses SQLite database for local development
+- CORS configured for localhost:3000
+- Debug mode enabled for development
+- Simple console logging
