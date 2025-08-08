@@ -34,86 +34,6 @@ class AIRequestDetailView(generics.RetrieveAPIView):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def ai_chat(request):
-    """General AI chat endpoint for any cooking/food related questions"""
-    question = request.data.get('question', '')
-    context = request.data.get('context', '')  # Optional context for follow-up questions
-    
-    if not question.strip():
-        return Response({
-            'success': False,
-            'message': 'Question is required'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    ai_service = GeminiAIService()
-    
-    if not ai_service.is_available():
-        return Response({
-            'success': False,
-            'message': 'AI service is currently unavailable. Please check your API configuration.'
-        }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-    
-    try:
-        import time
-        start_time = time.time()
-        
-        # Create AI request
-        ai_request = AIRequest.objects.create(
-            user=request.user,
-            request_type='general_chat',
-            input_text=f"Question: {question}\nContext: {context}" if context else question
-        )
-        
-        # Enhanced prompt for food/cooking related questions
-        prompt = f"""
-        You are OnlyPans AI, a knowledgeable cooking and food assistant. Answer the following question with helpful, accurate, and practical information.
-        
-        Question: {question}
-        {f"Previous context: {context}" if context else ""}
-        
-        Guidelines:
-        - Focus on cooking, recipes, nutrition, meal planning, and food-related topics
-        - Provide practical, actionable advice
-        - If the question is not food-related, politely redirect to cooking topics
-        - Be conversational but informative
-        - Include tips, substitutions, or variations when relevant
-        - If suggesting recipes, provide brief ingredients and steps
-        
-        Please provide a helpful and engaging response:
-        """
-        
-        response = ai_service.model.generate_content(prompt)
-        response_text = response.text
-        
-        # Calculate processing time
-        processing_time = time.time() - start_time
-        
-        # Update AI request
-        ai_request.response_text = response_text
-        ai_request.processing_time = processing_time
-        ai_request.save()
-        
-        return Response({
-            'success': True,
-            'message': 'AI response generated successfully',
-            'data': {
-                'response': response_text,
-                'question': question,
-                'context': context
-            },
-            'processing_time': processing_time,
-            'request_id': ai_request.id
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        return Response({
-            'success': False,
-            'message': f'Error generating AI response: {str(e)}'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def recognize_food_image(request):
     """Recognize food items from an uploaded image"""
     serializer = ImageRecognitionRequestSerializer(data=request.data)
@@ -296,7 +216,6 @@ def submit_feedback(request, request_id):
 
 
 @api_view(['GET'])
-@permission_classes([])  # Allow anonymous access
 def ai_service_status(request):
     """Check AI service availability"""
     ai_service = GeminiAIService()

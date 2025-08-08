@@ -1,16 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  images: {
-    unoptimized: true,
-  },
+  /* config options for local development */
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://onlypans.onrender.com/api',
-  },
-  // Enable experimental features for better Vercel compatibility
-  experimental: {
-    esmExternals: true,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
   },
 };
 

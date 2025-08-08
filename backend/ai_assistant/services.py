@@ -19,8 +19,8 @@ class GeminiAIService:
     """Service class for interacting with Google Gemini AI"""
     
     def __init__(self):
-        if settings.GOOGLE_AI_API_KEY:
-            genai.configure(api_key=settings.GOOGLE_AI_API_KEY)
+        if settings.GOOGLE_API_KEY:
+            genai.configure(api_key=settings.GOOGLE_API_KEY)
             self.model = genai.GenerativeModel('gemini-1.5-flash')
         else:
             logger.warning("Google API key not configured. AI features will not work.")
@@ -28,7 +28,7 @@ class GeminiAIService:
     
     def is_available(self) -> bool:
         """Check if the AI service is available"""
-        return self.model is not None and bool(settings.GOOGLE_AI_API_KEY)
+        return self.model is not None and bool(settings.GOOGLE_API_KEY)
     
     def recognize_food_from_image(self, image_file, user) -> Tuple[AIRequest, Dict]:
         """
@@ -57,10 +57,9 @@ class GeminiAIService:
             # Prepare the image
             image = Image.open(image_file)
             
-            # Create prompt for food recognition and recipe suggestion
+            # Create prompt for food recognition
             prompt = """
             Analyze this image and identify any food items, dishes, or ingredients you can see.
-            Based on what you identify, suggest a recipe that could be made with these ingredients or recreate the dish shown.
             
             Please provide your response in the following JSON format:
             {
@@ -73,19 +72,9 @@ class GeminiAIService:
                     }
                 ],
                 "overall_confidence": 0.90,
-                "recipe_suggestion": {
-                    "title": "Suggested Recipe Name",
-                    "description": "Brief description of the suggested recipe",
-                    "ingredients": ["ingredient 1", "ingredient 2", "ingredient 3"],
-                    "basic_steps": ["step 1", "step 2", "step 3"],
-                    "prep_time": 15,
-                    "cook_time": 30,
-                    "servings": 4,
-                    "difficulty": "easy/medium/hard"
-                },
-                "cooking_tips": [
-                    "Tip 1",
-                    "Tip 2"
+                "suggestions": [
+                    "Recipe suggestion 1",
+                    "Recipe suggestion 2"
                 ]
             }
             
@@ -94,9 +83,6 @@ class GeminiAIService:
             - Prepared dishes or meals
             - Cooking implements or kitchen tools (if relevant)
             - Overall meal type (breakfast, lunch, dinner, snack)
-            
-            If you can identify a specific dish, provide a recipe to recreate it.
-            If you see ingredients, suggest a recipe that uses most of them.
             """
             
             # Generate response
@@ -106,33 +92,12 @@ class GeminiAIService:
             # Try to parse JSON response
             try:
                 response_data = json.loads(response_text)
-                
-                # Try to create a full recipe if we have a good recipe suggestion
-                if response_data.get('recipe_suggestion') and response_data.get('overall_confidence', 0) > 0.7:
-                    try:
-                        recipe_suggestion = response_data['recipe_suggestion']
-                        full_recipe = self._create_recipe_from_image_suggestion(recipe_suggestion, user)
-                        if full_recipe:
-                            ai_request.generated_recipe = full_recipe
-                    except Exception as e:
-                        logger.error(f"Error creating recipe from image suggestion: {str(e)}")
-                        
             except json.JSONDecodeError:
                 # If JSON parsing fails, create a structured response
                 response_data = {
                     "detected_foods": [],
                     "overall_confidence": 0.5,
-                    "recipe_suggestion": {
-                        "title": "Unable to parse recipe",
-                        "description": "The AI provided a response but it couldn't be parsed into a structured format",
-                        "ingredients": [],
-                        "basic_steps": [],
-                        "prep_time": 0,
-                        "cook_time": 0,
-                        "servings": 4,
-                        "difficulty": "unknown"
-                    },
-                    "cooking_tips": [],
+                    "suggestions": [],
                     "raw_response": response_text
                 }
             
@@ -163,8 +128,7 @@ class GeminiAIService:
                 "error": str(e),
                 "detected_foods": [],
                 "overall_confidence": 0.0,
-                "recipe_suggestion": None,
-                "cooking_tips": []
+                "suggestions": []
             }
     
     def generate_recipe_from_ingredients(self, ingredients: str, user, **kwargs) -> Tuple[AIRequest, Dict]:
@@ -366,67 +330,6 @@ class GeminiAIService:
             
         except Exception as e:
             logger.error(f"Error creating recipe from AI response: {str(e)}")
-            return None
-    
-    def _create_recipe_from_image_suggestion(self, recipe_suggestion: Dict, user) -> Optional[Recipe]:
-        """
-        Create a Recipe object from image recognition recipe suggestion
-        
-        Args:
-            recipe_suggestion: Dictionary containing basic recipe information from image
-            user: Django User instance
-            
-        Returns:
-            Recipe instance or None if creation fails
-        """
-        try:
-            # Create Recipe with basic information
-            recipe = Recipe.objects.create(
-                title=recipe_suggestion.get('title', 'AI Suggested Recipe from Image'),
-                description=recipe_suggestion.get('description', 'Recipe suggested based on image analysis'),
-                prep_time=recipe_suggestion.get('prep_time', 15),
-                cook_time=recipe_suggestion.get('cook_time', 30),
-                servings=recipe_suggestion.get('servings', 4),
-                difficulty=recipe_suggestion.get('difficulty', 'medium'),
-                cuisine='ai-suggested',
-                created_by=user,
-                ai_generated=True
-            )
-            
-            # Create basic ingredients from the suggestion
-            for idx, ingredient_name in enumerate(recipe_suggestion.get('ingredients', [])):
-                Ingredient.objects.create(
-                    recipe=recipe,
-                    name=ingredient_name,
-                    quantity=1,  # Default quantity
-                    unit='piece',  # Default unit
-                    notes='Adjust quantity as needed',
-                    order=idx + 1
-                )
-            
-            # Create basic instructions from the suggestion
-            for idx, step in enumerate(recipe_suggestion.get('basic_steps', [])):
-                Instruction.objects.create(
-                    recipe=recipe,
-                    step_number=idx + 1,
-                    instruction=step,
-                    time_minutes=None,
-                    temperature=''
-                )
-            
-            # Add basic tags
-            tag_names = ['ai-generated', 'from-image']
-            if recipe_suggestion.get('difficulty'):
-                tag_names.append(recipe_suggestion['difficulty'])
-                
-            for tag_name in tag_names:
-                tag, created = RecipeTag.objects.get_or_create(name=tag_name.lower())
-                recipe.tags.add(tag)
-            
-            return recipe
-            
-        except Exception as e:
-            logger.error(f"Error creating recipe from image suggestion: {str(e)}")
             return None
     
     def suggest_meal_planning(self, user_preferences: Dict, meal_history: List[Dict]) -> Dict:
